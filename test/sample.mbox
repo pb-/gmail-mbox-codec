@@ -1,0 +1,13 @@
+From 1652035695511953517@xxx Thu Dec 05 00:00:12 +0000 2019
+Subject: First mail
+Some-Header: Some value
+
+This mail contains a From line in the middle of the body,
+leading to an unnecessary split:
+From 1654263252658410674@xxx Sun Dec 29 14:06:16 +0000 2019
+But such is life, what can you do.
+
+From 1775049166353230907@xxx Wed Aug 23 19:26:40 +0000 2023
+Subject: Second mail
+
+This is the second and last mail.
