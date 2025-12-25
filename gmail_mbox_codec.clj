@@ -65,4 +65,6 @@
 (case (first *command-line-args*)
   "split" (split)
   "join" (join)
-  (.println System/out "Usage: clojure -M gmail-mbox-codec.clj (split|join)"))
+  (do
+    (.println System/out "Usage: clojure -M gmail-mbox-codec.clj (split|join)")
+    (System/exit 1)))
