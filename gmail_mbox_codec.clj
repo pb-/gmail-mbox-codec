@@ -1,7 +1,7 @@
 (ns gmail-mbox-codec
   (:require [clojure.java.io :as io])
   (:import [java.io File BufferedReader BufferedWriter]
-           [java.nio.file StandardCopyOption Files Paths]
+           [java.nio.file CopyOption StandardCopyOption Files Paths FileAlreadyExistsException]
            [java.nio.file.attribute FileAttribute]
            [java.util HexFormat]
            [java.security MessageDigest DigestOutputStream]))
@@ -15,8 +15,8 @@
                                    (subs digest 2 4)
                                    (subs digest 4)])))
 
-(defn rename [from to]
-  (Files/move from to (into-array [StandardCopyOption/REPLACE_EXISTING])))
+(defn rename [from to replace?]
+  (Files/move from to (into-array CopyOption (if replace? [StandardCopyOption/REPLACE_EXISTING] []))))
 
 (defn temp-file []
   (File/createTempFile "gmail-mbox-codec-" ".tmp" (File. ".")))
@@ -37,7 +37,10 @@
                   file (chunk-path digest)
                   dir (.getParent file)]
               (Files/createDirectories dir (into-array FileAttribute []))
-              (rename (.toPath chunk-file) file)
+              (try
+                (rename (.toPath chunk-file) file false)
+                (catch FileAlreadyExistsException _
+                  (.delete chunk-file)))
               (.append sequence-writer (str file))
               (.newLine sequence-writer)))
           (when line
@@ -54,7 +57,7 @@
                 (.write ^BufferedWriter chunk-writer line)
                 (.write ^BufferedWriter chunk-writer "\r\n")
                 (recur chunk-file chunk-writer chunk-digester)))))))
-    (rename (.toPath sequence-file) (.toPath (File. sequence-file-name)))))
+    (rename (.toPath sequence-file) (.toPath (File. sequence-file-name)) true)))
 
 (defn join []
   (with-open [sequence-reader (io/reader sequence-file-name)]
